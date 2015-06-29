@@ -1,9 +1,11 @@
-from gevent.local import local
+from eventlet.corolocal import local
 from werkzeug.local import LocalProxy
 from werkzeug.wrappers import Request
 from contextlib import contextmanager
 
-from gevent.wsgi import WSGIServer
+
+import eventlet
+from eventlet import wsgi
 
 _requests = local()
 request = LocalProxy(lambda: _requests.request)
@@ -36,4 +38,4 @@ def application(environ, start_response):
 
 if __name__ == '__main__':
     print 'Serving on port 8000'
-    WSGIServer(('', 8000), application).serve_forever()
+    wsgi.server(eventlet.listen(('', 8000)), application)

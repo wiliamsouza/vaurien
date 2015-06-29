@@ -3,7 +3,7 @@
 build:
 	virtualenv .
 	bin/easy_install funkload
-	bin/easy_install gevent
+	bin/easy_install eventlet
 	bin/easy_install werkzeug
 
 test:

@@ -1,4 +1,4 @@
-from gevent.queue import PriorityQueue, Empty
+from eventlet.green.Queue import PriorityQueue, Empty
 import time
 import contextlib
 import sys

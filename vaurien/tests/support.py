@@ -3,7 +3,8 @@ import subprocess
 
 from vaurien.webserver import get_config
 
-from gevent.pywsgi import WSGIServer
+import eventlet
+from eventlet import wsgi
 
 
 class FakeProxy(object):
@@ -33,9 +34,7 @@ def start_vaurien_httpserver(port):
     config = get_config()
     config.registry['proxy'] = FakeProxy()
 
-    server = WSGIServer(('localhost', int(port)), config.make_wsgi_app(),
-                        log=None)
-    server.serve_forever()
+    wsgi.server(eventlet.listen(('localhost', int(port))), config.make_wsgi_app(), log=None)
 
 
 def start_simplehttp_server(port=8888):

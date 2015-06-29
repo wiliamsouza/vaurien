@@ -180,7 +180,8 @@ def main():
         # proxy
         proxy = OnTheFlyProxy(**proxy_args)
         from vaurien.webserver import get_config
-        from gevent.pywsgi import WSGIServer
+        import eventlet
+        from eventlet import wsgi
 
         config = get_config()
         config.registry['proxy'] = proxy
@@ -190,10 +191,8 @@ def main():
         # configure_logger(app.logger, args.loglevel, args.logoutput)
 
         # app.run(host=args.http_host, port=args.http_port)
-        http_server = WSGIServer((args.http_host, args.http_port), app,
-                                 log=DevNull())
+        wsgi.server(eventlet.listen((args.http_host, args.http_port)), app, log=DevNull())
 
-        http_server.start()
         logger.info('Started the HTTP server: http://%s:%s' %
                     (args.http_host, args.http_port))
     else:

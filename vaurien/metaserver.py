@@ -1,14 +1,13 @@
 import sys
 import argparse
 
-from gevent.server import StreamServer
-from gevent.socket import create_connection, error, gethostbyname
+from eventlet.green.socket import create_connection, gethostbyname
 
 from vaurien.protocols.http import EOH, RE_LEN
 from vaurien.behaviors.dummy import Dummy
 from vaurien.run import LOG_LEVELS, configure_logger
 from vaurien import logger, __version__
-from vaurien.util import get_data, chunked
+from vaurien.util import get_data, chunked, StreamServer
 
 
 _TMP = """\
@@ -65,7 +64,7 @@ class MetaProxy(StreamServer):
 
             try:
                 dest = create_connection((self.host, port))
-            except error:
+            except OSError:
                 client_sock.sendall(http_error(503, '%d not responding' %
                                     port))
                 return

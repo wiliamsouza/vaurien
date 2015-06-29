@@ -1,4 +1,4 @@
-import gevent
+import eventlet
 
 from vaurien.behaviors.dummy import Dummy
 from vaurien.util import get_data
@@ -19,4 +19,4 @@ class Hang(Dummy):
             data = get_data(source)
 
         while True:
-            gevent.sleep(1.)
+            eventlet.sleep(1.)

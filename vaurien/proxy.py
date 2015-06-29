@@ -1,12 +1,12 @@
-import gevent
+import eventlet
 import random
 from uuid import uuid4
 
-from gevent.server import StreamServer
-from gevent.socket import create_connection
-from gevent.select import select, error
+from eventlet.green import select
+from eventlet.green.socket import create_connection
 
-from vaurien.util import parse_address, get_prefixed_sections, extract_settings
+from vaurien.util import (parse_address, get_prefixed_sections,
+                          extract_settings, StreamServer)
 from vaurien.protocols import get_protocols
 from vaurien.behaviors import get_behaviors
 
@@ -103,7 +103,7 @@ class DefaultProxy(StreamServer):
                         res = select([client_sock, backend_sock], [], [],
                                      timeout=self.timeout)
                         rlist = res[0]
-                    except error:
+                    except OSError:
                         backend_sock.close()
                         backend_sock._closed = True
                         break
@@ -112,11 +112,11 @@ class DefaultProxy(StreamServer):
                     if hasattr(client_sock, 'closed') and client_sock.closed:
                         raise ValueError("Client is gone")
 
-                    greens = [gevent.spawn(self._weirdify,
-                                           client_sock, backend_sock,
-                                           sock is not backend_sock,
-                                           statsd_prefix,
-                                           behavior, behavior_name)
+                    greens = [eventlet.spawn(self._weirdify,
+                                             client_sock, backend_sock,
+                                             sock is not backend_sock,
+                                             statsd_prefix,
+                                             behavior, behavior_name)
                               for sock in rlist]
 
                     res = [green.get() for green in greens]

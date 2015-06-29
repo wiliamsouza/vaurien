@@ -3,10 +3,9 @@ import sys
 import time
 import subprocess
 
-from gevent.socket import gethostbyname
-from gevent.socket import error
-from gevent.socket import wait_read
-from gevent import sleep
+from eventlet import sleep
+from eventlet.green.socket import gethostbyname
+from eventlet.hubs import trampoline as wait_read
 
 
 class ImportStringError(ImportError):
@@ -187,7 +186,7 @@ def get_data(sock, buffer=1024):
     while True:
         try:
             return sock.recv(buffer)
-        except error, e:
+        except OSError, e:
             if e.args[0] not in (EWOULDBLOCK, EAGAIN):
                 raise
             timeout = sock.gettimeout()
@@ -195,7 +194,7 @@ def get_data(sock, buffer=1024):
                 # we are in async mode here so we just need to switch
                 sleep(0)
             else:
-                wait_read(sock.fileno(), timeout=timeout)
+                wait_read(sock.fileno(), read=True, timeout=timeout)
 
 
 def extract_settings(args, prefix, name):
@@ -208,3 +207,9 @@ def extract_settings(args, prefix, name):
         settings[arg[len(prefix):]] = getattr(args, arg)
 
     return settings
+
+
+class StreamServer(object):
+    def __init__(self, listner, backlog, **kwargs):
+        self.listner = listner
+        self.backlog = backlog
